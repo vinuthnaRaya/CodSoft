@@ -1,0 +1,111 @@
+import random
+
+# Constants
+PLAYER_X = 'X'
+PLAYER_O = 'O'
+EMPTY = ' '
+
+# Initialize the board
+def initialize_board():
+    return [[EMPTY, EMPTY, EMPTY] for _ in range(3)]
+
+def print_board(board):
+    for row in board:
+        print(' | '.join(row))
+        print('-' * 5)
+
+def is_winner(board, player):
+    # Check rows, columns and diagonals
+    return (any(all(cell == player for cell in row) for row in board) or
+            any(all(board[r][c] == player for r in range(3)) for c in range(3)) or
+            all(board[i][i] == player for i in range(3)) or
+            all(board[i][2 - i] == player for i in range(3)))
+
+def is_full(board):
+    return all(cell != EMPTY for row in board for cell in row)
+
+def available_moves(board):
+    return [(r, c) for r in range(3) for c in range(3) if board[r][c] == EMPTY]
+def minimax(board, depth, is_maximizing):
+    if is_winner(board, PLAYER_X):
+        return 10 - depth
+    if is_winner(board, PLAYER_O):
+        return depth - 10
+    if is_full(board):
+        return 0
+
+    if is_maximizing:
+        best_score = -float('inf')
+        for (r, c) in available_moves(board):
+            board[r][c] = PLAYER_X
+            score = minimax(board, depth + 1, False)
+            board[r][c] = EMPTY
+            best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = float('inf')
+        for (r, c) in available_moves(board):
+            board[r][c] = PLAYER_O
+            score = minimax(board, depth + 1, True)
+            board[r][c] = EMPTY
+            best_score = min(score, best_score)
+        return best_score
+
+def best_move(board):
+    best_score = -float('inf')
+    move = None
+    for (r, c) in available_moves(board):
+        board[r][c] = PLAYER_X
+        score = minimax(board, 0, False)
+        board[r][c] = EMPTY
+        if score > best_score:
+            best_score = score
+            move = (r, c)
+    return move
+def play_game():
+    board = initialize_board()
+    print("Welcome to Tic-Tac-Toe!")
+    print_board(board)
+
+    while True:
+        # Player X (Human) Move
+        print("Your move (row and column): ")
+        try:
+            row, col = map(int, input().split())
+            if board[row][col] != EMPTY:
+                print("Invalid move, try again.")
+                continue
+            board[row][col] = PLAYER_X
+        except (IndexError, ValueError):
+            print("Invalid input, please enter row and column as two integers.")
+            continue
+
+        if is_winner(board, PLAYER_X):
+            print_board(board)
+            print("Congratulations, you win!")
+            break
+        if is_full(board):
+            print_board(board)
+            print("It's a tie!")
+            break
+
+        # AI Move (Player O)
+        move = best_move(board)
+        if move:
+            row, col = move
+            board[row][col] = PLAYER_O
+            print(f"AI plays: {row} {col}")
+
+        if is_winner(board, PLAYER_O):
+            print_board(board)
+            print("AI wins!")
+            break
+        if is_full(board):
+            print_board(board)
+            print("It's a tie!")
+            break
+
+        print_board(board)
+
+if __name__ == "__main__":
+    play_game()
