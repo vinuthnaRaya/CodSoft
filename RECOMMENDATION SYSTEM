@@ -1,0 +1,118 @@
+# Install required libraries
+!pip install scikit-surprise
+
+# Download and unzip the MovieLens dataset (ml-latest-small.zip)
+!wget -nc http://files.grouplens.org/datasets/movielens/ml-latest-small.zip
+!unzip -n ml-latest-small.zip
+
+import pandas as pd
+from surprise import Dataset, Reader, SVD
+from surprise.model_selection import cross_validate, train_test_split
+
+# Load the dataset
+data = pd.read_csv('ml-latest-small/ratings.csv')
+
+# Inspect the data
+print(data.head())
+
+# Create a reader to parse the data
+reader = Reader(rating_scale=(0.5, 5.0))
+
+# Load the data into Surprise's dataset format
+dataset = Dataset.load_from_df(data[['userId', 'movieId', 'rating']], reader)
+
+# Instantiate the SVD model
+model = SVD()
+
+# Perform cross-validation
+cross_validate(model, dataset, measures=['RMSE', 'MAE'], cv=5, verbose=True)
+
+# Split the data into train and test sets
+trainset, testset = train_test_split(dataset, test_size=0.25)
+
+# Train the model on the trainset
+model.fit(trainset)
+
+# Get a list of all movie IDs
+movie_ids = data['movieId'].unique()
+
+# Get the list of movies the user has already rated
+user_id = 1  # Specify the user ID for whom you want to make recommendations
+rated_movies = data[data['userId'] == user_id]['movieId']
+
+# Get the list of movies the user hasn't rated yet
+unrated_movies = [movie_id for movie_id in movie_ids if movie_id not in rated_movies]
+
+# Predict ratings for the unrated movies
+predictions = [model.predict(user_id, movie_id) for movie_id in unrated_movies]
+
+# Sort the predictions by estimated rating in descending order
+predictions.sort(key=lambda x: x.est, reverse=True)
+
+# Get the top 10 recommendations
+top_10_recommendations = predictions[:10]
+
+# Print the top 10 recommendations
+print("Top 10 movie recommendations for user {}:".format(user_id))
+for prediction in top_10_recommendations:
+    print(f"Movie ID: {prediction.iid}, Estimated Rating: {prediction.est:.2f}")
+
+
+# Install required libraries
+!pip install scikit-surprise
+
+# Download and unzip the MovieLens dataset (ml-latest-small.zip)
+!wget -nc http://files.grouplens.org/datasets/movielens/ml-latest-small.zip
+!unzip -n ml-latest-small.zip
+
+import pandas as pd
+from surprise import Dataset, Reader, SVD
+from surprise.model_selection import cross_validate, train_test_split
+
+# Load the dataset
+data = pd.read_csv('ml-latest-small/ratings.csv')
+
+# Inspect the data
+print(data.head())
+
+# Create a reader to parse the data
+reader = Reader(rating_scale=(0.5, 5.0))
+
+# Load the data into Surprise's dataset format
+dataset = Dataset.load_from_df(data[['userId', 'movieId', 'rating']], reader)
+
+# Instantiate the SVD model
+model = SVD()
+
+# Perform cross-validation
+cross_validate(model, dataset, measures=['RMSE', 'MAE'], cv=5, verbose=True)
+
+# Split the data into train and test sets
+trainset, testset = train_test_split(dataset, test_size=0.25)
+
+# Train the model on the trainset
+model.fit(trainset)
+
+# Get a list of all movie IDs
+movie_ids = data['movieId'].unique()
+
+# Get the list of movies the user has already rated
+user_id = 1  # Specify the user ID for whom you want to make recommendations
+rated_movies = data[data['userId'] == user_id]['movieId']
+
+# Get the list of movies the user hasn't rated yet
+unrated_movies = [movie_id for movie_id in movie_ids if movie_id not in rated_movies]
+
+# Predict ratings for the unrated movies
+predictions = [model.predict(user_id, movie_id) for movie_id in unrated_movies]
+
+# Sort the predictions by estimated rating in descending order
+predictions.sort(key=lambda x: x.est, reverse=True)
+
+# Get the top 10 recommendations
+top_10_recommendations = predictions[:10]
+
+# Print the top 10 recommendations
+print("Top 10 movie recommendations for user {}:".format(user_id))
+for prediction in top_10_recommendations:
+    print(f"Movie ID: {prediction.iid}, Estimated Rating: {prediction.est:.2f}")
